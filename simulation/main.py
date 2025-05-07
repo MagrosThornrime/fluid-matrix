@@ -1,6 +1,6 @@
 import pygame as pg
 
-from World import World
+from World import World, ElementType, perpendicular_vector
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 640
@@ -20,10 +20,10 @@ def draw_pen(screen: pg.Surface, pen_size: int) -> None:
     pg.draw.circle(screen, "grey", (x, y), pen_size, width=2)
 
 
-def handle_add_elements(sand: World, pen_size: int) -> None:
+def handle_add_elements(world: World, pen_size: int, el_type: ElementType) -> None:
     mouse_pressed, _, _ = pg.mouse.get_pressed()
     if mouse_pressed:
-        sand.add_elements(*pg.mouse.get_pos(), pen_size)
+        world.add_elements(*pg.mouse.get_pos(), pen_size, el_type)
 
 
 def main() -> None:
@@ -35,6 +35,9 @@ def main() -> None:
     dt = 0
     acc = 0
     pen_size = 40
+    pressed = 0
+
+    current_el_type = ElementType.SAND
 
     world = World(SCREEN_WIDTH, SCREEN_HEIGHT, 20)
 
@@ -53,12 +56,49 @@ def main() -> None:
         keys = pg.key.get_pressed()
         if keys[pg.K_r]:
             world.reset()
+
+        # Changing size of drawing pen
         if keys[pg.K_EQUALS] and pen_size < 100:
             pen_size += 1
         if keys[pg.K_MINUS] and pen_size > 1:
             pen_size -= 1
 
-        handle_add_elements(world, pen_size)
+        # Changing element type
+        if keys[pg.K_1]:
+            current_el_type = ElementType.SAND
+        if keys[pg.K_2]:
+            current_el_type = ElementType.WATER
+        if keys[pg.K_3]:
+            current_el_type = ElementType.STONE
+        if keys[pg.K_0]:
+            if pressed == 0:
+                pressed = 1
+                dx, dy = world.dx, world.dy
+                print(dx, dy)
+                if dx == 0 and dy == 1:
+                    world.dx, world.dy = 1, 1
+                if dx == 1 and dy == 1:
+                    world.dx, world.dy = 1, 0
+                if dx == 1 and dy == 0:
+                    world.dx, world.dy = 1, -1
+                if dx == 1 and dy == -1:
+                    world.dx, world.dy = 0, -1
+                if dx == 0 and dy == -1:
+                    world.dx, world.dy = -1, -1
+                if dx == -1 and dy == -1:
+                    world.dx, world.dy = -1, 0
+                if dx == -1 and dy == 0:
+                    world.dx, world.dy = -1, 1
+                if dx == -1 and dy == 1:
+                    world.dx, world.dy = 0, 1
+
+        print(pressed)
+        if pressed > 0:
+            pressed += 1
+            if pressed > 10:
+                pressed = 0
+
+        handle_add_elements(world, pen_size, current_el_type)
         draw_elements(screen, world)
         draw_pen(screen, pen_size)
 
@@ -70,4 +110,20 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    # x, y = 2, 1
+    # px, py = perpendicular_vector(x, y)
+    # print(x*px + y*py)
+    #
+    # x, y = -2, 1
+    # px, py = perpendicular_vector(x, y)
+    # print(x*px + y*py)
+    #
+    # x, y = -2, -1
+    # px, py = perpendicular_vector(x, y)
+    # print(x*px + y*py)
+    #
+    # x, y = 2, -1
+    # px, py = perpendicular_vector(x, y)
+    # print(x*px + y*py)
+
     main()
