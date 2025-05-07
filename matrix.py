@@ -4,10 +4,6 @@ import rgbmatrix
 import board
 import time
 
-import adafruit_imageload
-import terminalio
-from adafruit_display_text.label import Label
-from math import sin
 
 displayio.release_displays()
 matrix = rgbmatrix.RGBMatrix(
@@ -20,41 +16,47 @@ matrix = rgbmatrix.RGBMatrix(
             output_enable_pin=board.GP13,
         )
 
+# Access the Display
 display = framebufferio.FramebufferDisplay(matrix, auto_refresh=False)
 
-display.root_group = displayio.CIRCUITPYTHON_TERMINAL
-     
-g = displayio.Group()
-b, p = adafruit_imageload.load("pi-logo32b.bmp")
-t = displayio.TileGrid(b, pixel_shader=p)
-t.x = 20
-g.append(t)
+# Create a bitmap and palette
+bitmap = displayio.Bitmap(display.width, display.height, 5)
+palette = displayio.Palette(5)
+palette[0] = 0x000000  # black
+palette[1] = 0xFF0000  # red
+palette[2] = 0x0000FF  # blue
+palette[3] = 0x00FF00  # green
+palette[4] = 0xFFFFFF  # white
 
-l = Label(text="Feather\nRP2040", font=terminalio.FONT, color=0xffffff, line_spacing=.7)
-g.append(l)
+# Create a TileGrid and Group
+tilegrid = displayio.TileGrid(bitmap, pixel_shader=palette)
+group = displayio.Group()
+group.append(tilegrid)
 
-display.root_group = g
+# Assign the group to the display
+display.root_group = group
+# End of Setup Code
 
-target_fps = 50
-ft = 1/target_fps
-now = t0 = time.monotonic_ns()
-deadline = t0 + ft
+def draw_pixel(output, x, y, my_color):
+    output[y * display.width + x] = my_color
 
-p = 1
-q = 17
+def draw_row(output, row, my_color):
+    for x in range(display.width):
+        draw_pixel(output, x, row, my_color)
+
+display.refresh()
+
+# Speed control
+delay = 0.05  # Adjust this value to change the speed (in seconds)
+
 while True:
-    tm = (now - t0) * 1e-9
-    x = l.x - 1
-    if x < -40:
-        x = 63
-    y =  round(12 + sin(tm / p) * 6)
-    l.x = x
-    l.y = y
-    display.refresh(target_frames_per_second=target_fps, minimum_frames_per_second=0)
-    while True:
-        now = time.monotonic_ns()
-        if now > deadline:
-            break
-        time.sleep((deadline - now) * 1e-9)
-    deadline += ft
+    for c in range(1, 5):
+        for y in range(display.height):
+            # Light up all LEDs in the row at once
+            draw_row(bitmap, y, c)
+            display.refresh()
+            time.sleep(delay)
 
+            # Turn off all LEDs in the row
+            draw_row(bitmap, y, 0)
+            display.refresh()
