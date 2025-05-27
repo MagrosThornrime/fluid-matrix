@@ -1,1 +1,3 @@
 .vscode/
+simulation/venv
+simulation/__pycache__
