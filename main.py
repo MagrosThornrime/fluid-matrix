@@ -1,113 +1,82 @@
-from World import World, ElementType, perpendicular_vector
+import displayio
+import framebufferio
+import rgbmatrix
+import board
+import time
+from World import World, perpendicular_vector
 
 SCREEN_WIDTH = 64
 SCREEN_HEIGHT = 32
+FRAMERATE = 60
 
-def draw_elements(output, world: World) -> None:
-    for x, y, color in world.elements_list:
-        output[y * SCREEN_WIDTH + x] = color
+def init_matrix() -> rgbmatrix.RGBMatrix:
+    displayio.release_displays()
+    matrix = rgbmatrix.RGBMatrix(
+            width=64,
+            bit_depth=4,
+            rgb_pins=[board.GP0, board.GP1, board.GP2, board.GP3, board.GP4, board.GP5],
+            addr_pins=[board.GP6, board.GP7, board.GP8, board.GP9],
+            clock_pin=board.GP11,
+            latch_pin=board.GP12,
+            output_enable_pin=board.GP13,
+        )
+    return matrix
 
+def init_display(matrix: rgbmatrix.RGBMatrix) -> framebufferio.FramebufferDisplay:
+    display = framebufferio.FramebufferDisplay(matrix, auto_refresh=False)
+    return display
 
+def init_bitmap(display: framebufferio.FramebufferDisplay) -> displayio.Bitmap:
+    colors = [
+        0x000000, # default color
+        0xffae00, 0xffb619, 0xffbc2b, 0xffc240,  # sand colors
+        0x7d7d7d, 0x4d4d4d, 0x333333,  # stone colors
+        0x00aaff, 0x0099ff, 0x0088ff, 0x0077ff  # water colors
+    ]
+    bitmap = displayio.Bitmap(display.width, display.height, len(colors))
+    palette = displayio.Palette(len(colors))
+    for index, color in enumerate(colors):
+        palette[index] = color
+    tilegrid = displayio.TileGrid(bitmap, pixel_shader=palette)
+    group = displayio.Group()
+    group.append(tilegrid)
+    display.root_group = group
+    return bitmap
 
+def draw_elements(output: displayio.Bitmap, world: World) -> None:
+    colored = {(x, y): color for x, y, color in world.elements_list}
+    for y in range(SCREEN_HEIGHT):
+        for x in range(SCREEN_WIDTH):
+            output[y * SCREEN_WIDTH + x] = colored.get((x,y), 0)
 
 def main() -> None:
-    # pg setup
-    pg.init()
-    screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    clock = pg.time.Clock()
-    running = True
     dt = 0
     acc = 0
-    pen_size = 40
-    pressed = 0
 
-    current_el_type = ElementType.SAND
+    matrix = init_matrix()
+    display = init_display(matrix)
+    bitmap = init_bitmap(display)
 
     world = World(SCREEN_WIDTH, SCREEN_HEIGHT, 1)
 
-    # main loop
-    while running:
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                running = False
+    display.refresh()
+    world.add_elements(20, 10, 4, "water")
 
-        screen.fill("white")
-
+    last_time = time.monotonic()
+    while True:
         while acc >= 1 / FRAMERATE:
             world.update()
             acc -= 1 / FRAMERATE
 
-        keys = pg.key.get_pressed()
-        if keys[pg.K_r]:
-            world.reset()
-
-        # Changing size of drawing pen
-        if keys[pg.K_EQUALS] and pen_size < 100:
-            pen_size += 1
-        if keys[pg.K_MINUS] and pen_size > 1:
-            pen_size -= 1
-
-        # Changing element type
-        if keys[pg.K_1]:
-            current_el_type = ElementType.SAND
-        if keys[pg.K_2]:
-            current_el_type = ElementType.WATER
-        if keys[pg.K_3]:
-            current_el_type = ElementType.STONE
-        if keys[pg.K_0]:
-            if pressed == 0:
-                pressed = 1
-                dx, dy = world.dx, world.dy
-                print(dx, dy)
-                if dx == 0 and dy == 1:
-                    world.dx, world.dy = 1, 1
-                if dx == 1 and dy == 1:
-                    world.dx, world.dy = 1, 0
-                if dx == 1 and dy == 0:
-                    world.dx, world.dy = 1, -1
-                if dx == 1 and dy == -1:
-                    world.dx, world.dy = 0, -1
-                if dx == 0 and dy == -1:
-                    world.dx, world.dy = -1, -1
-                if dx == -1 and dy == -1:
-                    world.dx, world.dy = -1, 0
-                if dx == -1 and dy == 0:
-                    world.dx, world.dy = -1, 1
-                if dx == -1 and dy == 1:
-                    world.dx, world.dy = 0, 1
-
-        print(pressed)
-        if pressed > 0:
-            pressed += 1
-            if pressed > 10:
-                pressed = 0
-
-        handle_add_elements(world, pen_size, current_el_type)
-        draw_elements(screen, world)
-        draw_pen(screen, pen_size)
-
-        pg.display.flip()
-        dt = clock.tick(FRAMERATE) / 1000
+        draw_elements(bitmap, world)
+        display.refresh()
+        current_time = time.monotonic()
+        dt = (current_time - last_time) / 20
+        last_time = current_time
         acc += dt
-
-    pg.quit()
-
+        time.sleep(1/FRAMERATE)
 
 if __name__ == "__main__":
-    # x, y = 2, 1
-    # px, py = perpendicular_vector(x, y)
-    # print(x*px + y*py)
-    #
-    # x, y = -2, 1
-    # px, py = perpendicular_vector(x, y)
-    # print(x*px + y*py)
-    #
-    # x, y = -2, -1
-    # px, py = perpendicular_vector(x, y)
-    # print(x*px + y*py)
-    #
-    # x, y = 2, -1
-    # px, py = perpendicular_vector(x, y)
-    # print(x*px + y*py)
-
     main()
+
+
