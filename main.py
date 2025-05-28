@@ -2,12 +2,17 @@ import displayio
 import framebufferio
 import rgbmatrix
 import board
+import busio
 import time
 from World import World, perpendicular_vector
+import adafruit_mpu6050 as mpu6050
+
+## sda - 14
+## scl - 15
 
 SCREEN_WIDTH = 64
 SCREEN_HEIGHT = 32
-FRAMERATE = 60
+FRAMERATE = 360
 
 def init_matrix() -> rgbmatrix.RGBMatrix:
     displayio.release_displays()
@@ -43,6 +48,12 @@ def init_bitmap(display: framebufferio.FramebufferDisplay) -> displayio.Bitmap:
     display.root_group = group
     return bitmap
 
+def init_mpu():
+    i2c = busio.I2C(sda=board.GP14, scl=board.GP15)
+    # Set up the MPU6050 class 
+    mpu = mpu6050.MPU6050(i2c)
+    return mpu
+
 def draw_elements(output: displayio.Bitmap, world: World) -> None:
     colored = {(x, y): color for x, y, color in world.elements_list}
     for y in range(SCREEN_HEIGHT):
@@ -56,6 +67,7 @@ def main() -> None:
     matrix = init_matrix()
     display = init_display(matrix)
     bitmap = init_bitmap(display)
+    mpu = init_mpu()
 
     world = World(SCREEN_WIDTH, SCREEN_HEIGHT, 1)
 
@@ -64,6 +76,10 @@ def main() -> None:
 
     last_time = time.monotonic()
     while True:
+
+        gyro = mpu.gyro
+        accel = mpu.acceleration
+        print("Gyro: " + str(gyro) + ", Accel: " + str(accel))
         while acc >= 1 / FRAMERATE:
             world.update()
             acc -= 1 / FRAMERATE
@@ -71,12 +87,11 @@ def main() -> None:
         draw_elements(bitmap, world)
         display.refresh()
         current_time = time.monotonic()
-        dt = (current_time - last_time) / 20
+        # dt = (current_time - last_time) / 20
+        dt = 0.05
         last_time = current_time
         acc += dt
         time.sleep(1/FRAMERATE)
 
 if __name__ == "__main__":
     main()
-
-
