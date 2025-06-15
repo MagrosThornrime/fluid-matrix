@@ -16,19 +16,12 @@ class Stone:
         return None
 
 
-class Sand:
-    # stepped = False
-    
+class Sand:    
     def __init__(self, color: int, velocity: float = 0):
         self.color = color
         self.velocity = velocity
 
     def update(self, x: int, y: int, world: World) -> tuple[int, int] | None:
-        # if self.stepped == world.stepped:
-        #     return None
-        #
-        # self.stepped = not self.stepped
-
         if self._can_move_to(x, y + 1, world):
             return x, y + 1
         elif self._can_move_to(x + 1, y + 1, world):
@@ -81,25 +74,10 @@ class Water:
 
         if self._can_move_to(x + dx, y + dy, world):
             target_pos = x + dx, y + dy
-        # elif self._can_move_to(x + dx, y + 1, world):
-        #     target_pos = x + dx, y + 1
-        # elif self._can_move_to(x - dx, y - 1, world):
-        #     target_pos = x - dx, y - 1
         elif self._can_move_to(x + px, y + py, world):
             target_pos = x + px, y + py
         elif self._can_move_to(x - px, y - py, world):
             target_pos = x - px, y - py
-
-        # if self._can_move_to(x + 1, y + 1, world):
-        #     target_pos = x + 1, y + 1
-        # # elif self._can_move_to(x + dx, y + 1, world):
-        # #     target_pos = x + dx, y + 1
-        # # elif self._can_move_to(x - dx, y - 1, world):
-        # #     target_pos = x - dx, y - 1
-        # elif self._can_move_to(x - dx, y + dx, world):
-        #     target_pos = x - dx, y + dx
-        # elif self._can_move_to(x + dx, y - dx, world):
-        #     target_pos = x + dx, y - dx
 
         return target_pos
 

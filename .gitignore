@@ -5,3 +5,5 @@ __pycache__
 app.mpy
 World.mpy
 circuitpython/
+*.py[cod]
+simulation/DS_Store

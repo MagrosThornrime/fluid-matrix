@@ -3,11 +3,9 @@ import framebufferio
 import rgbmatrix
 import board
 import busio
-from World import World, perpendicular_vector
 import adafruit_mpu6050 as mpu6050
 
-## sda - 14
-## scl - 15
+from World import World
 
 SCREEN_WIDTH = 64
 SCREEN_HEIGHT = 32
