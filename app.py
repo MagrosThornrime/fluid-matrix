@@ -44,7 +44,7 @@ def init_matrix() -> rgbmatrix.RGBMatrix:
     displayio.release_displays()
     matrix = rgbmatrix.RGBMatrix(
             width=64,
-            bit_depth=4,
+            bit_depth=1,
             rgb_pins=[board.GP0, board.GP1, board.GP2, board.GP3, board.GP4, board.GP5],
             addr_pins=[board.GP6, board.GP7, board.GP8, board.GP9],
             clock_pin=board.GP11,
@@ -60,9 +60,9 @@ def init_display(matrix: rgbmatrix.RGBMatrix) -> framebufferio.FramebufferDispla
 def init_bitmap(display: framebufferio.FramebufferDisplay) -> displayio.Bitmap:
     colors = [
         0x000000, # default color
-        0xffae00, 0xffb619, 0xffbc2b, 0xffc240,  # sand colors
-        0x7d7d7d, 0x4d4d4d, 0x333333,  # stone colors
-        0x00aaff, 0x0099ff, 0x0088ff, 0x0077ff  # water colors
+        0xffae00,  # sand color
+        0xffffff,  # stone color
+        0x00aaff, # water color
     ]
     bitmap = displayio.Bitmap(display.width, display.height, len(colors))
     palette = displayio.Palette(len(colors))
@@ -111,6 +111,7 @@ def main() -> None:
         dx, dy = get_velocity(accel)
         world.dx = dx
         world.dy = dy
+        
         while acc >= 1 / FRAMERATE:
             world.update()
             acc -= 1 / FRAMERATE

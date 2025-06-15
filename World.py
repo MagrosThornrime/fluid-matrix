@@ -107,9 +107,9 @@ class World:
         element_size: int = 5,
     ) -> None:
         self.GRAVITY = 0.1
-        self.SAND_COLORS = [1, 2, 3, 4]
-        self.STONE_COLORS = [5, 6, 7]
-        self.WATER_COLORS = [8, 9, 10, 11]
+        self.SAND_COLOR = 1
+        self.STONE_COLOR = 2
+        self.WATER_COLOR = 3
         self.elements = []
         self.stepped = False
         self.dx = 0
@@ -129,11 +129,11 @@ class World:
 
         if self._can_move_to(grid_x, grid_y):
             if el_type == "sand":
-                self.elements[grid_y][grid_x] = Sand(random.choice(self.SAND_COLORS))
+                self.elements[grid_y][grid_x] = Sand(self.SAND_COLOR)
             elif el_type == "stone":
-                self.elements[grid_y][grid_x] = Stone(random.choice(self.STONE_COLORS))
+                self.elements[grid_y][grid_x] = Stone(self.STONE_COLOR)
             elif el_type == "water":
-                self.elements[grid_y][grid_x] = Water(random.choice(self.WATER_COLORS))
+                self.elements[grid_y][grid_x] = Water(self.WATER_COLOR)
 
     def update(self) -> None:
         shuffled_x_indexes = list(range(self.width))
