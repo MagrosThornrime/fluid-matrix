@@ -87,7 +87,6 @@ def draw_elements(output: displayio.Bitmap, world: World) -> None:
             output[y * SCREEN_WIDTH + x] = colored.get((x,y), 0)
 
 def main() -> None:
-    dt = 0
     acc = 0
 
     matrix = init_matrix()
