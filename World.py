@@ -7,35 +7,6 @@ def shuffle(lst):
         j = random.randint(0, i)
         lst[i], lst[j] = lst[j], lst[i]
 
-class Stone:
-    
-    def __init__(self, color: int):
-        self.color = color
-
-    def update(self, _x: int, _y: int, _world) -> None:
-        return None
-
-
-class Sand:    
-    def __init__(self, color: int, velocity: float = 0):
-        self.color = color
-        self.velocity = velocity
-
-    def update(self, x: int, y: int, world: World) -> tuple[int, int] | None:
-        if self._can_move_to(x, y + 1, world):
-            return x, y + 1
-        elif self._can_move_to(x + 1, y + 1, world):
-            return x + 1, y + 1
-        elif self._can_move_to(x - 1, y + 1, world):
-            return x - 1, y + 1
-
-    def _can_move_to(self, x: int, y: int, world: World) -> bool:
-        if not (0 <= y < world.height and 0 <= x < world.width):
-            return False
-
-        return world.elements[y][x] is None or isinstance(world.elements[y][x], Water)
-
-
 def perpendicular_vector(x: int, y: int) -> tuple[int, int]:
     if x == 0 and y == 0:
         return 0, 0
@@ -53,6 +24,46 @@ def perpendicular_vector(x: int, y: int) -> tuple[int, int]:
         return y, -x
     else:
         return x, y
+
+
+class Stone:
+    
+    def __init__(self, color: int):
+        self.color = color
+
+    def update(self, _x: int, _y: int, _world) -> None:
+        return None
+
+
+class Sand:    
+    def __init__(self, color: int, velocity: float = 0):
+        self.color = color
+        self.velocity = velocity
+
+    def update(self, x: int, y: int, world: World) -> tuple[int, int] | None:
+
+        dx = world.dx
+        dy = world.dy
+
+        if (dx, dy) == (0, 1) or (dx, dy) == (0, -1):
+            ax, bx = 1, -1
+            ay, by = dy, dy
+        elif (dx, dy) == (1, 0) or (dx, dy) == (-1, 0):
+            ax, bx = dx, dx
+            ay, by = 1, -1
+
+        if self._can_move_to(x + dx, y + dy, world):
+            return x + dx, y + dy
+        elif self._can_move_to(x + ax, y + ay, world):
+            return x + ax, y + ay
+        elif self._can_move_to(x + bx, y + by, world):
+            return x + bx, y + by
+
+    def _can_move_to(self, x: int, y: int, world: World) -> bool:
+        if not (0 <= y < world.height and 0 <= x < world.width):
+            return False
+
+        return world.elements[y][x] is None or isinstance(world.elements[y][x], Water)
 
 
 class Water:

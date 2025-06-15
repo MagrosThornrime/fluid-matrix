@@ -3,13 +3,14 @@ import framebufferio
 import rgbmatrix
 import board
 import busio
+import time
 import adafruit_mpu6050 as mpu6050
 
 from World import World
 
 SCREEN_WIDTH = 64
 SCREEN_HEIGHT = 32
-FRAMERATE = 60
+FRAMERATE = 30
 
 def dot(vector1, vector2):
     result = 0
@@ -99,9 +100,12 @@ def main() -> None:
     display.refresh()
     world.add_elements(20, 5, 6, "water")
     
-    world.add_elements(20, 30, 6, "stone")
+    world.add_elements(50, 2, 4, "stone")
     
     world.add_elements(40, 20, 3, "sand")
+    
+    world.add_elements(50, 10, 2, "sand")
+
 
     while True:
         accel = mpu.acceleration
@@ -114,6 +118,4 @@ def main() -> None:
 
         draw_elements(bitmap, world)
         display.refresh()
-        dt = 0.1
-        acc += dt
-
+        acc += 0.1
