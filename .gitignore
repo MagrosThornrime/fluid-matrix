@@ -2,3 +2,6 @@
 simulation/venv
 simulation/__pycache__
 __pycache__
+app.mpy
+World.mpy
+circuitpython/
