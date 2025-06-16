@@ -80,11 +80,13 @@ def init_mpu():
     mpu = mpu6050.MPU6050(i2c)
     return mpu
 
-def draw_elements(output: displayio.Bitmap, world: World) -> None:
-    colored = {(x, y): color for x, y, color in world.elements_list}
-    for y in range(SCREEN_HEIGHT):
-        for x in range(SCREEN_WIDTH):
-            output[y * SCREEN_WIDTH + x] = colored.get((x,y), 0)
+def draw_elements(output: displayio.Bitmap, old_elements, elements) -> None:
+    for x, y, _ in old_elements:
+        output[y * SCREEN_WIDTH + x] = 0
+    
+    for x, y, color in elements:
+        output[y * SCREEN_WIDTH + x] = color
+
 
 def main() -> None:
     acc = 0
@@ -103,10 +105,14 @@ def main() -> None:
     
     world.add_elements(40, 20, 3, "sand")
     
-    world.add_elements(50, 10, 2, "sand")
+    world.add_elements(50, 10, 3, "sand")
 
-
+    old_elements = []
+    elements = [(x, y, color) for x, y, color in world.elements_list]
+    last_time = time.monotonic()
     while True:
+        old_elements = elements
+        elements = [(x, y, color) for x, y, color in world.elements_list]
         accel = mpu.acceleration
         dx, dy = get_velocity(accel)
         world.dx = dx
@@ -116,6 +122,9 @@ def main() -> None:
             world.update()
             acc -= 1 / FRAMERATE
 
-        draw_elements(bitmap, world)
+        draw_elements(bitmap, old_elements, elements)
         display.refresh()
-        acc += 0.1
+        current_time = time.monotonic()
+        dt = current_time - last_time
+        acc += dt / 5
+        last_time = current_time
