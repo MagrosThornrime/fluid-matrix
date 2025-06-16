@@ -3,14 +3,12 @@ import framebufferio
 import rgbmatrix
 import board
 import busio
-import time
 import adafruit_mpu6050 as mpu6050
 
 from World import World
 
 SCREEN_WIDTH = 64
 SCREEN_HEIGHT = 32
-FRAMERATE = 30
 
 def dot(vector1, vector2):
     result = 0
@@ -89,8 +87,6 @@ def draw_elements(output: displayio.Bitmap, old_elements, elements) -> None:
 
 
 def main() -> None:
-    acc = 0
-
     matrix = init_matrix()
     display = init_display(matrix)
     bitmap = init_bitmap(display)
@@ -99,17 +95,16 @@ def main() -> None:
     world = World(SCREEN_WIDTH, SCREEN_HEIGHT, 1)
 
     display.refresh()
-    world.add_elements(20, 5, 6, "water")
+    world.add_elements(20, 5, 8, "water")
     
-    world.add_elements(50, 2, 4, "stone")
+    world.add_elements(40, 6, 5, "stone")
     
     world.add_elements(40, 20, 3, "sand")
     
-    world.add_elements(50, 10, 3, "sand")
+    world.add_elements(50, 10, 2, "sand")
 
     old_elements = []
     elements = [(x, y, color) for x, y, color in world.elements_list]
-    last_time = time.monotonic()
     while True:
         old_elements = elements
         elements = [(x, y, color) for x, y, color in world.elements_list]
@@ -117,14 +112,6 @@ def main() -> None:
         dx, dy = get_velocity(accel)
         world.dx = dx
         world.dy = dy
-        
-        while acc >= 1 / FRAMERATE:
-            world.update()
-            acc -= 1 / FRAMERATE
-
+        world.update()
         draw_elements(bitmap, old_elements, elements)
         display.refresh()
-        current_time = time.monotonic()
-        dt = current_time - last_time
-        acc += dt / 5
-        last_time = current_time
