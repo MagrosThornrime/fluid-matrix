@@ -6,4 +6,10 @@ This is a fluid dynamics simulation shown on RGB 64x32 matrix with Raspberry Pi 
 - water - it can fall, it can randomly move left and right if it's on a surface, tries to lay flat on screen
 - sand - it can fall, it creates mounds when falls on a surface, and it can go through the water
 
-The schematic and a video is work-in-progress.
+## How to run
+Move all files to your Raspberry Pi Pico board and run the main.py file.
+
+## Work in progress
+Stuff we want to add to README:
+- schematics
+- video with a presentation
