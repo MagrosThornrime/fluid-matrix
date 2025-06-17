@@ -1,5 +1,7 @@
 # Fluid matrix
 
+https://github.com/user-attachments/assets/0b482fc6-3d4d-4f4a-aead-2452d7b35498
+
 ## Introduction
 This is a fluid dynamics simulation shown on RGB 64x32 matrix with Raspberry Pi Pico and a MPU6050 gyroscope. You can rotate the board, affecting the particles' gravitation. Currently, the simulation supports following particle types:
 - stone - it can't fall and doesn't interact with anything - no particle can pass through it
@@ -11,7 +13,3 @@ This is a fluid dynamics simulation shown on RGB 64x32 matrix with Raspberry Pi 
 
 ## How to run
 Move all files to your Raspberry Pi Pico board and run main.py file. After moving all files, the board should always run main.py after booting.
-
-## Work in progress
-Stuff we want to add to README:
-- video with a presentation
