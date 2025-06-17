@@ -11,17 +11,12 @@ class Gyroscope:
 
     def get_velocity(self) -> tuple[int, int]:
         accel = normalize(self.mpu.acceleration)
-        vectors = {
-            (0, 1, 0): (0, 1),
-            (0, -1, 0): (0, -1),
-            (1, 0, 0): (1, 0),
-            (-1, 0, 0): (-1, 0)
-        }
-        max_dot = float("-inf")
-        max_vector = (0, 1, 0)
-        for vector in vectors.keys():
-            new_dot = dot(accel, vector)
-            if new_dot > max_dot:
-                max_dot = new_dot
-                max_vector = vector
-        return vectors[max_vector]
+        vectors = [
+            (0, 1, 0),
+            (0, -1, 0),
+            (1, 0, 0),
+            (-1, 0, 0),
+        ]
+        dots = [dot(accel, vector[:2]) for vector in vectors]
+        max_vector = max(range(len(dots)), key=lambda i: dots[i])
+        return vectors[max_vector][:2]
