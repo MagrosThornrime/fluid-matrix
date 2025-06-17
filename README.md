@@ -1,6 +1,6 @@
 # Fluid matrix
 
-https://github.com/user-attachments/assets/0b482fc6-3d4d-4f4a-aead-2452d7b35498
+https://github.com/user-attachments/assets/20d5b9e4-9f5a-4546-a573-89fc0c046caa
 
 ## Introduction
 This is a fluid dynamics simulation shown on RGB 64x32 matrix with Raspberry Pi Pico and a MPU6050 gyroscope. You can rotate the board, affecting the particles' gravitation. Currently, the simulation supports following particle types:
