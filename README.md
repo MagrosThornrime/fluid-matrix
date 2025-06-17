@@ -10,7 +10,7 @@ This is a fluid dynamics simulation shown on RGB 64x32 matrix with Raspberry Pi 
 ![schematic](https://github.com/user-attachments/assets/83c18071-c21d-42b3-a61e-95df86c95192)
 
 ## How to run
-Move all files to your Raspberry Pi Pico board and run the main.py file.
+Move all files to your Raspberry Pi Pico board and run main.py file. After moving all files, the board should always run main.py after booting.
 
 ## Work in progress
 Stuff we want to add to README:
