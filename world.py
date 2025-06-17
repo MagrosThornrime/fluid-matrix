@@ -1,51 +1,11 @@
 from __future__ import annotations
 import math
 import random
-from collections.abc import Iterator
-from dataclasses import dataclass
-from enum import Enum
-from typing import Any
 
-
-class ElementType(Enum):
-    SAND = 0
-    WATER = 1
-    STONE = 2
-
-
-@dataclass
-class Stone:
-    color: str
-
-    def update(self, _x: int, _y: int, _world) -> None:
-        return None
-
-
-@dataclass
-class Sand:
-    color: str
-    velocity: float = 0
-    # stepped = False
-
-    def update(self, x: int, y: int, world: World) -> tuple[int, int] | None:
-        # if self.stepped == world.stepped:
-        #     return None
-        #
-        # self.stepped = not self.stepped
-
-        if self._can_move_to(x, y + 1, world):
-            return x, y + 1
-        elif self._can_move_to(x + 1, y + 1, world):
-            return x + 1, y + 1
-        elif self._can_move_to(x - 1, y + 1, world):
-            return x - 1, y + 1
-
-    def _can_move_to(self, x: int, y: int, world: World) -> bool:
-        if not (0 <= y < world.height and 0 <= x < world.width):
-            return False
-
-        return world.elements[y][x] is None or isinstance(world.elements[y][x], Water)
-
+def shuffle(lst: list):
+    for i in range(len(lst) - 1, 0, -1):
+        j = random.randint(0, i)
+        lst[i], lst[j] = lst[j], lst[i]
 
 def perpendicular_vector(x: int, y: int) -> tuple[int, int]:
     if x == 0 and y == 0:
@@ -66,10 +26,51 @@ def perpendicular_vector(x: int, y: int) -> tuple[int, int]:
         return x, y
 
 
-@dataclass
+class Stone:
+    
+    def __init__(self, color: int):
+        self.color = color
+
+    def update(self, _x: int, _y: int, _world) -> None:
+        return None
+
+
+class Sand:    
+    def __init__(self, color: int, velocity: float = 0):
+        self.color = color
+        self.velocity = velocity
+
+    def update(self, x: int, y: int, world: World) -> tuple[int, int] | None:
+
+        dx = world.dx
+        dy = world.dy
+
+        if (dx, dy) == (0, 1) or (dx, dy) == (0, -1):
+            ax, bx = 1, -1
+            ay, by = dy, dy
+        elif (dx, dy) == (1, 0) or (dx, dy) == (-1, 0):
+            ax, bx = dx, dx
+            ay, by = 1, -1
+
+        if self._can_move_to(x + dx, y + dy, world):
+            return x + dx, y + dy
+        elif self._can_move_to(x + ax, y + ay, world):
+            return x + ax, y + ay
+        elif self._can_move_to(x + bx, y + by, world):
+            return x + bx, y + by
+
+    def _can_move_to(self, x: int, y: int, world: World) -> bool:
+        if not (0 <= y < world.height and 0 <= x < world.width):
+            return False
+
+        return world.elements[y][x] is None or isinstance(world.elements[y][x], Water)
+
+
 class Water:
-    color: str = "#00aaff"
-    DISPERSION_RATE: int = 2
+    
+    def __init__(self, color: int = 8, DISPERSION_RATE: int = 2):
+        self.color = color
+        self.DISPERSION_RATE = DISPERSION_RATE
 
     def update(self, x: int, y: int, world: World) -> tuple[int, int] | None:
         target_pos = None
@@ -84,25 +85,10 @@ class Water:
 
         if self._can_move_to(x + dx, y + dy, world):
             target_pos = x + dx, y + dy
-        # elif self._can_move_to(x + dx, y + 1, world):
-        #     target_pos = x + dx, y + 1
-        # elif self._can_move_to(x - dx, y - 1, world):
-        #     target_pos = x - dx, y - 1
         elif self._can_move_to(x + px, y + py, world):
             target_pos = x + px, y + py
         elif self._can_move_to(x - px, y - py, world):
             target_pos = x - px, y - py
-
-        # if self._can_move_to(x + 1, y + 1, world):
-        #     target_pos = x + 1, y + 1
-        # # elif self._can_move_to(x + dx, y + 1, world):
-        # #     target_pos = x + dx, y + 1
-        # # elif self._can_move_to(x - dx, y - 1, world):
-        # #     target_pos = x - dx, y - 1
-        # elif self._can_move_to(x - dx, y + dx, world):
-        #     target_pos = x - dx, y + dx
-        # elif self._can_move_to(x + dx, y - dx, world):
-        #     target_pos = x + dx, y - dx
 
         return target_pos
 
@@ -114,49 +100,50 @@ class Water:
 
 
 class World:
-    DEFAULT_ELEMENT_SIZE = 5
-    GRAVITY = 0.1
-    SAND_COLORS = ["#ffae00", "#ffb619", "#ffbc2b", "#ffc240"]
-    STONE_COLORS = ["#7d7d7d", "#4d4d4d", "#333333"]
-    WATER_COLORS = ["#00aaff", "#0099ff", "#0088ff", "#0077ff"]
-    elements: list[list[Sand | Water | None]]
-    stepped = False
-    dx = 0
-    dy = 1
-
     def __init__(
         self,
         width: int,
         height: int,
-        element_size: int = DEFAULT_ELEMENT_SIZE,
+        element_size: int = 1,
     ) -> None:
+        self.GRAVITY = 0.1
+        self.SAND_COLOR = 1
+        self.STONE_COLOR = 2
+        self.WATER_COLOR = 3
+        self.elements = []
+        self.stepped = False
+        self.dx = 0
+        self.dy = 1
         self._element_size = element_size
         self.width, self.height = self._get_grid_position(width, height)
         self.elements = [[None] * self.width for _ in range(self.height)]
 
-    def add_elements(self, x: int, y: int, pen_size: int, el_type: ElementType) -> None:
+    def add_elements(self, x: int, y: int, pen_size: int, el_type: str) -> None:
         for dx in range(-pen_size, pen_size, self.element_size):
             for dy in range(-pen_size, pen_size, self.element_size):
                 if dx**2 + dy**2 < pen_size**2:
                     self.add_single_element(x + dx, y + dy, el_type)
 
-    def add_single_element(self, x: int, y: int, el_type: ElementType) -> None:
+    def add_single_element(self, x: int, y: int, el_type: str) -> None:
         grid_x, grid_y = self._get_grid_position(x, y)
 
         if self._can_move_to(grid_x, grid_y):
-            if el_type == ElementType.SAND:
-                self.elements[grid_y][grid_x] = Sand(random.choice(self.SAND_COLORS))
-            elif el_type == ElementType.STONE:
-                self.elements[grid_y][grid_x] = Stone(random.choice(self.STONE_COLORS))
-            elif el_type == ElementType.WATER:
-                self.elements[grid_y][grid_x] = Water(random.choice(self.WATER_COLORS))
+            if el_type == "sand":
+                self.elements[grid_y][grid_x] = Sand(self.SAND_COLOR)
+            elif el_type == "stone":
+                self.elements[grid_y][grid_x] = Stone(self.STONE_COLOR)
+            elif el_type == "water":
+                self.elements[grid_y][grid_x] = Water(self.WATER_COLOR)
 
-    def update(self) -> None:
+    def update(self, dx: int, dy: int) -> None:
+        self.dx = dx
+        self.dy = dy
+        
         shuffled_x_indexes = list(range(self.width))
-        random.shuffle(shuffled_x_indexes)
+        shuffle(shuffled_x_indexes)
 
         shuffled_y_indexes = list(range(self.height))
-        random.shuffle(shuffled_y_indexes)
+        shuffle(shuffled_y_indexes)
 
         self.stepped = not self.stepped
 
@@ -196,7 +183,7 @@ class World:
                 self.elements[y][x] = None
 
     @property
-    def elements_list(self) -> Iterator[tuple[int, int, str]]:
+    def elements_list(self):
         for x in range(self.width):
             for y in range(self.height):
                 if element := self.elements[y][x]:
@@ -205,3 +192,4 @@ class World:
     @property
     def element_size(self) -> int:
         return self._element_size
+
